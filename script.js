@@ -9,6 +9,7 @@
         condition.
 */
 
+/* Console Version: */
 const gameboard = (function() {
     const board = [];
     for(let i = 0; i < 3; i++) {
@@ -23,22 +24,20 @@ const gameboard = (function() {
 
     // To add the token of player to the cell.
     const addToken = (row, col, player) => {
-        return board[row][col] === 0;
+        row--;
+        col--;
+        if(board[row][col] !== 0) {
+            return false;
+        }
+        board[row][col] = player;
+        console.table(board);
+        return true;
     }
 
     return {getBoard, addToken};
 })();
 
 function GameController() {
-    const players = {
-        playerOne: {
-            name: "p1"
-        },
-        playerTwo: {
-            name: "p2"
-        }
-    };
-
     let activePlayer = 0;
 
     const getActivePlayer = () => {
@@ -46,31 +45,22 @@ function GameController() {
     }
     
     const switchActivePlayer = () => {
-        activePlayer = !activePlayer;
+        activePlayer = 1 - activePlayer;
     }
 
-    const play = () => {
+    const playRound = (row, col) => {
         const board = gameboard.getBoard();
-        while(1) {
-            const currPlayer = Number(getActivePlayer());
-            console.table(board);
-            console.log(currPlayer);
-            let row = Number(prompt('Enter row'));
-            let col = Number(prompt('Enter column'));
-
-            // 0-based indexing
-            row--;
-            col--;
-            if(gameboard.addToken(row, col, currPlayer)) {
-                board[row][col] = currPlayer + 1;
-                if(checkWinner(board)) {
-                    console.log('Winner is player ' + currPlayer);
-                    break;
-                }
-                console.table(board);
-                switchActivePlayer();
+        const currPlayer = Number(getActivePlayer());
+        if(gameboard.addToken(row, col, currPlayer + 1)) {
+            if(checkWinner(board)) {
+                console.log('Winner is player ' + currPlayer);
+                return 0;
             }
+            console.table(board);
+            switchActivePlayer();
+            return 1;
         }
+        return 2;
     }
 
     const checkWinner = (board) => {
@@ -123,8 +113,56 @@ function GameController() {
         return winner;
     }
 
-    return {play};
+    return {playRound, getActivePlayer};
 }
 
-const newGame = GameController();
-newGame.play();
+/* Screen Version */
+function ScreenController() {
+    const newGame = GameController();
+
+    const render = () => {
+        for(let i = 1; i < 4; i++) {
+            for(let j = 1; j < 4; j++) {
+                const cell = document.querySelector(`.row-${i} > .col-${j}`);
+                cell.addEventListener('click', (e) => clickHandlerCell(e, cell));
+            }
+        }
+    }
+
+    function clickHandlerCell(event, cell) {
+        const gameBoard = document.querySelector('.game-board');
+        if(gameBoard.classList.contains('complete')) {
+            return ;
+        }
+        console.log(event.target);
+        const player = newGame.getActivePlayer();
+        let r = 0, c = 0;
+        for(let i = 1; i < 4; i++) {
+            if(cell.classList.contains(`row-${i}`)){
+                r = i;
+                break;
+            }
+        }
+        for(let i = 1; i < 4; i++) {
+            if(cell.classList.contains(`col-${i}`)){
+                c = i;
+                break;
+            }
+        }
+        console.log({r, c});
+        const result = newGame.playRound(r, c, player);
+        if(result === 0) {
+            cell.textContent = (player==0?'X':'O');
+            
+            gameBoard.classList.add('complete');
+            console.log(`Winner is ${player}`);
+        }
+        else if(result === 1) {
+            cell.textContent = (player==0?'X':'O');
+        }
+    }
+
+    render();   // Initial render of the board
+}
+
+ScreenController();
