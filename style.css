@@ -5,7 +5,7 @@
 
 .header {
     height: 100px;
-    background-color: aliceblue;
+    background-color: rgb(205, 253, 255);
     font-size: 2rem;
     box-sizing: border-box;
     padding: 30px;
@@ -13,6 +13,8 @@
 
 .container {
     display: flex;
+    flex-direction: column;
+    gap: 50px;
     justify-content: center;
     align-items: center;
 }
@@ -41,3 +43,29 @@
     align-items: center;
 }
 
+[class^="row-"] > *:hover {
+    box-shadow: inset 0px 0px 10px 10px #3286db;
+}
+
+.complete > [class^="row-"] > * {
+    box-shadow: none;
+}
+
+.btn {
+    font-size: 1.4rem;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 20px;
+    border: 0;
+    background-color: rgb(205, 253, 255);
+}
+
+.btn:hover {
+    box-shadow: rgb(55, 77, 100) 0px 20px 30px -10px;
+}
+
+.btn:active {
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}

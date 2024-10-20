@@ -26,7 +26,7 @@ const gameboard = (function() {
     const addToken = (row, col, player) => {
         row--;
         col--;
-        if(board[row][col] !== 0) {
+        if(board[row][col] !== 0 && player !== 0) {
             return false;
         }
         board[row][col] = player;
@@ -49,9 +49,12 @@ function GameController() {
     }
 
     const playRound = (row, col) => {
-        const board = gameboard.getBoard();
+        let board = gameboard.getBoard();
         const currPlayer = Number(getActivePlayer());
+        console.table(board);
         if(gameboard.addToken(row, col, currPlayer + 1)) {
+            board = gameboard.getBoard();
+            console.table(board);
             if(checkWinner(board)) {
                 console.log('Winner is player ' + currPlayer);
                 return 0;
@@ -63,17 +66,28 @@ function GameController() {
         return 2;
     }
 
+    const reset = () => {
+        console.log("After reset:");
+        activePlayer = 0;
+        for(let i = 1; i < 4; i++) {
+            for(let j = 1; j < 4; j++) {
+                gameboard.addToken(i, j, 0);
+            }
+        }
+        console.table(gameboard.getBoard());
+    }
+
     const checkWinner = (board) => {
         let winner = false;
 
         // Check rows
         for(let i = 0; i < 3; i++) {
             if(board[i][0] === 0)
-                break;
+                continue;
             let val = board[i][0];
             let curr = true;
             for(let j = 0; j < 3; j++) {
-                if(val != board[i][j]) {
+                if(val !== board[i][j]) {
                     curr = false;
                 }
             }
@@ -83,11 +97,11 @@ function GameController() {
         // Check cols
         for(let i = 0; i < 3; i++) {
             if(board[0][i] === 0)
-                break;
+                continue;
             let val = board[0][i];
             let curr = true;
             for(let j = 0; j < 3; j++) {
-                if(val != board[j][i]) {
+                if(val !== board[j][i]) {
                     curr = false;
                 }
             }
@@ -102,18 +116,22 @@ function GameController() {
         }
         winner |= curr;
 
-        // Check diagonal-2
+        // Check diagonal-2`
         curr = true;
         for(let i = 0; i < 3; i++) {
-            if(board[i][2 - i] != board[0][2] ||board[0][2]===0)
+            if(board[i][2 - i] != board[0][2] || board[0][2]===0)
                 curr = false;
         }
         winner |= curr;
+        if(board[1][0] === 1) {
+            console.log(board);
+            console.log(winner);
+        }
 
         return winner;
     }
 
-    return {playRound, getActivePlayer};
+    return {playRound, getActivePlayer, reset};
 }
 
 /* Screen Version */
@@ -127,6 +145,8 @@ function ScreenController() {
                 cell.addEventListener('click', (e) => clickHandlerCell(e, cell));
             }
         }
+        const resetButton = document.querySelector('#reset');
+        resetButton.addEventListener('click', clickHandlerReset);
     }
 
     function clickHandlerCell(event, cell) {
@@ -153,13 +173,24 @@ function ScreenController() {
         const result = newGame.playRound(r, c, player);
         if(result === 0) {
             cell.textContent = (player==0?'X':'O');
-            
             gameBoard.classList.add('complete');
             console.log(`Winner is ${player}`);
         }
         else if(result === 1) {
             cell.textContent = (player==0?'X':'O');
         }
+    }
+
+    function clickHandlerReset(e) {
+        const cells = document.querySelectorAll('.game-board > * > *');
+        cells.forEach((cell) => {
+            cell.textContent = "";
+        });
+        const gameBoard = document.querySelector('.game-board');
+        if(gameBoard.classList.contains('complete')) {
+            gameBoard.classList.remove('complete');
+        }
+        newGame.reset();
     }
 
     render();   // Initial render of the board
